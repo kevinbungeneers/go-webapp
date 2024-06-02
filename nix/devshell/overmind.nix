@@ -17,14 +17,17 @@ let
     ${builtins.concatStringsSep "\n" beforeScripts}
    '' else "";
 
-   afterScripts = builtins.concatStringsSep "\n" (lib.mapAttrsToList (name: process: "${process.afterExec}") processes);
-
-   afterScript = if afterScripts != "" then ''
-    stop_up() {
-      ${afterScripts}
-    }
-    trap stop_up SIGINT SIGTERM
-   '' else "";
+   afterScript = processes:
+       let
+           afterExecs = lib.mapAttrsToList (name: process: "${process.afterExec}") processes;
+           concatted = builtins.concatStringsSep "\n" (lib.filter (process: process != "") afterExecs);
+       in
+        if concatted != "" then ''
+            stop_up() {
+              ${concatted}
+            }
+            trap stop_up SIGINT SIGTERM
+        '' else "";
 
    # Had to wrap overmind so that I could set the root directory. It defaults to the dir where the procfile is located
    # and there's no env var to override this dir value, for some reason.
@@ -41,7 +44,7 @@ let
 
      ${beforeScript}
 
-     ${afterScript}
+     ${afterScript processes}
 
      OVERMIND_PROCFILE=${procfile} ${pkgs.overmind}/bin/overmind "$@" $extraParams
    '';

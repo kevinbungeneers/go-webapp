@@ -1,2 +1,4 @@
 .devshell/
 .direnv/
+web/public/css/app.css
+node_modules/

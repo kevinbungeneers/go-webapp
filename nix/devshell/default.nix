@@ -3,6 +3,7 @@
 let
   modulesData = [
     { file = ./go.nix; params = { inherit pkgs; }; }
+    { file = ./nodejs.nix; params = { inherit pkgs; }; }
   ];
   modules = map ({file, params}: import file params) modulesData;
 
